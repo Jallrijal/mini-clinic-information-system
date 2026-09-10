@@ -8,8 +8,8 @@ const medicalRecordController = require('../controllers/medicalRecordController'
 /**
  * Medical Record Routes
  * -----------------------------------------------------------------------
- * POST /api/medical-records                   → buat catatan pemeriksaan (SOAP)
- * GET  /api/medical-records/:patientId        → riwayat pemeriksaan pasien
+ * POST /api/medical-records              → buat rekam medis SOAP + tindakan medis
+ * GET  /api/medical-records/:patientId   → riwayat pemeriksaan pasien
  *
  * Role yang diizinkan:
  *   - DOCTOR → bisa buat & baca rekam medis (tugas utama dokter)
@@ -17,7 +17,7 @@ const medicalRecordController = require('../controllers/medicalRecordController'
  * -----------------------------------------------------------------------
  */
 
-router.post('/',               authenticate, authorize('DOCTOR'),          medicalRecordController.create);
-router.get('/:patientId',     authenticate, authorize('DOCTOR', 'ADMIN'), medicalRecordController.getByPatient);
+router.post('/',            authenticate, authorize('DOCTOR'),          medicalRecordController.create);
+router.get('/:patientId',   authenticate, authorize('DOCTOR', 'ADMIN'), medicalRecordController.getByPatient);
 
 module.exports = router;
