@@ -232,23 +232,31 @@ CREATE TABLE prescription_items (
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- =====================================================================
--- SEED DATA (opsional, untuk testing)
+-- SEED DATA (untuk testing & development)
 -- =====================================================================
-
--- Default users
--- Password default untuk semua: "password123" (WAJIB di-hash ulang dengan bcrypt di aplikasi,
--- hash di bawah hanya contoh placeholder — GANTI dengan hash asli dari bcrypt saat seeding via aplikasi)
-INSERT INTO users (name, email, password, role) VALUES
-('Administrator', 'admin@clinic.com', '$2b$10$replace_with_real_bcrypt_hash', 'ADMIN'),
-('Dr. Budi Santoso', 'budi.doctor@clinic.com', '$2b$10$replace_with_real_bcrypt_hash', 'DOCTOR'),
-('Siti Petugas', 'siti.officer@clinic.com', '$2b$10$replace_with_real_bcrypt_hash', 'REGISTRATION_OFFICER');
 
 -- Default polyclinics
 INSERT INTO polyclinics (name, description) VALUES
 ('Poli Umum', 'Pelayanan kesehatan umum'),
 ('Poli Gigi', 'Pelayanan kesehatan gigi dan mulut'),
-('Poli Anak', 'Pelayanan kesehatan khusus anak');
+('Poli Anak', 'Pelayanan kesehatan khusus anak')
+ON DUPLICATE KEY UPDATE description = VALUES(description);
 
--- Default doctor (terhubung ke user id 2)
-INSERT INTO doctors (user_id, name, specialization, polyclinic_id) VALUES
-(2, 'Dr. Budi Santoso', 'Dokter Umum', 1);
+-- Default users
+-- Passwords (bcrypt hash, salt rounds = 10):
+--   admin@clinic.com        → Admin@123
+--   budi.doctor@clinic.com  → Doctor@123
+--   siti.officer@clinic.com → Officer@123
+INSERT INTO users (name, email, password, role) VALUES
+('Administrator',    'admin@clinic.com',         '$2b$10$9XN638Czz/Zl7SUfGjd8RODo3.azivL8PHz8T80FU4CPAuB22D31K', 'ADMIN'),
+('Dr. Budi Santoso', 'budi.doctor@clinic.com',   '$2b$10$mkEbxUFc0YI9hsd9GG4YPOw2T61c4GoFXf9NeWBS/t8g5RJC4Qs/.', 'DOCTOR'),
+('Siti Petugas',     'siti.officer@clinic.com',  '$2b$10$1L8epEQaQm0SZHW3AkZg5OKI5Ev4gvpiCC2CJ89bmiqPv.cUa/5.K', 'REGISTRATION_OFFICER')
+ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password);
+
+-- Default doctor (terhubung ke user Dr. Budi)
+INSERT INTO doctors (user_id, name, specialization, polyclinic_id)
+SELECT u.id, 'Dr. Budi Santoso', 'Dokter Umum', p.id
+FROM users u, polyclinics p
+WHERE u.email = 'budi.doctor@clinic.com' AND p.name = 'Poli Umum'
+ON DUPLICATE KEY UPDATE name = VALUES(name), specialization = VALUES(specialization);
+
