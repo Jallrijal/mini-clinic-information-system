@@ -1,0 +1,79 @@
+{
+  "info": {
+    "name": "Mini Clinic Information System",
+    "description": "REST API collection for the Mini Clinic Information System. Login requests store the JWT in the collection token variable.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" },
+    { "key": "token", "value": "" },
+    { "key": "patientId", "value": "1" },
+    { "key": "registrationId", "value": "1" },
+    { "key": "queueId", "value": "1" },
+    { "key": "medicalRecordId", "value": "1" },
+    { "key": "prescriptionId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        { "name": "Health check", "request": { "method": "GET", "url": "{{baseUrl}}/health" } }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login admin",
+          "event": [{ "listen": "test", "script": { "exec": ["const json = pm.response.json();", "if (json.data && json.data.token) pm.collectionVariables.set('token', json.data.token);"], "type": "text/javascript" } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@clinic.com\",\n  \"password\": \"Admin@123\"\n}" }, "url": "{{baseUrl}}/auth/login" }
+        },
+        { "name": "Current user", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/auth/me" } },
+        { "name": "Logout", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/auth/logout" } }
+      ]
+    },
+    {
+      "name": "Patients",
+      "item": [
+        { "name": "List patients", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/patients?page=1&limit=10" } },
+        { "name": "Patient detail", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/patients/{{patientId}}" } },
+        { "name": "Create patient", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"nik\": \"3273010101900001\",\n  \"name\": \"Pasien Postman\",\n  \"gender\": \"MALE\",\n  \"birth_date\": \"1990-01-01\",\n  \"phone\": \"081234567890\",\n  \"address\": \"Jl. Contoh No. 1\"\n}" }, "url": "{{baseUrl}}/patients" } },
+        { "name": "Update patient", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"phone\": \"081234567891\"\n}" }, "url": "{{baseUrl}}/patients/{{patientId}}" } },
+        { "name": "Delete patient", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/patients/{{patientId}}" } }
+      ]
+    },
+    {
+      "name": "Registrations",
+      "item": [
+        { "name": "Registration options", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/registrations/options" } },
+        { "name": "List registrations", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/registrations?page=1&limit=10" } },
+        { "name": "Create registration", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"patient_id\": {{patientId}},\n  \"doctor_id\": 1,\n  \"polyclinic_id\": 1,\n  \"visit_date\": \"2026-09-11\",\n  \"payment_type\": \"CASH\",\n  \"initial_complaint\": \"Demam dan pusing\"\n}" }, "url": "{{baseUrl}}/registrations" } },
+        { "name": "Update registration status", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"status\": \"CHECKED_IN\"\n}" }, "url": "{{baseUrl}}/registrations/{{registrationId}}" } }
+      ]
+    },
+    {
+      "name": "Queues",
+      "item": [
+        { "name": "List queues", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/queues?date=2026-09-11&status=WAITING" } },
+        { "name": "Create queue manually", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"registration_id\": {{registrationId}}\n}" }, "url": "{{baseUrl}}/queues" } },
+        { "name": "Call queue", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/queues/{{queueId}}/call" } },
+        { "name": "Update queue status", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"status\": \"DONE\"\n}" }, "url": "{{baseUrl}}/queues/{{queueId}}/status" } }
+      ]
+    },
+    {
+      "name": "Medical records and prescriptions",
+      "item": [
+        { "name": "Create medical record SOAP", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"registration_id\": {{registrationId}},\n  \"subjective\": \"Demam sejak kemarin\",\n  \"blood_pressure\": \"120/80\",\n  \"body_temperature\": 37.5,\n  \"weight\": 65,\n  \"height\": 170,\n  \"diagnosis\": \"Influenza\",\n  \"therapy_plan\": \"Istirahat dan obat simptomatik\",\n  \"medical_actions\": [\n    {\n      \"action_name\": \"Pemeriksaan fisik umum\",\n      \"description\": \"Kondisi umum baik\"\n    }\n  ]\n}" }, "url": "{{baseUrl}}/medical-records" } },
+        { "name": "Patient medical history", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/medical-records/{{patientId}}?page=1&limit=10" } },
+        { "name": "Create prescription", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"medical_record_id\": {{medicalRecordId}},\n  \"items\": [\n    {\n      \"medicine_name\": \"Paracetamol\",\n      \"dosage\": \"500mg\",\n      \"frequency\": \"3x sehari\",\n      \"instruction\": \"Setelah makan\"\n    }\n  ]\n}" }, "url": "{{baseUrl}}/prescriptions" } },
+        { "name": "Prescription detail", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/prescriptions/{{prescriptionId}}" } }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        { "name": "Dashboard summary", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/dashboard" } }
+      ]
+    }
+  ]
+}
