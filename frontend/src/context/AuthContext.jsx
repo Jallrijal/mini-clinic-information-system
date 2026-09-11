@@ -3,27 +3,27 @@ import api from '../services/api';
 
 const AuthContext = createContext(null);
 
+const getStoredUser = () => {
+  const savedUser = localStorage.getItem('user');
+  if (!savedUser) return null;
+  try {
+    return JSON.parse(savedUser);
+  } catch {
+    localStorage.removeItem('user');
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
   const [token, setToken] = useState(() => localStorage.getItem('token'));
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(() => (token ? getStoredUser() : null));
 
   useEffect(() => {
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      // Restore user from localStorage
-      const savedUser = localStorage.getItem('user');
-      if (savedUser) {
-        try {
-          setUser(JSON.parse(savedUser));
-        } catch {
-          setUser(null);
-        }
-      }
     } else {
       delete api.defaults.headers.common['Authorization'];
     }
-    setLoading(false);
   }, [token]);
 
   const login = useCallback(async (email, password) => {
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, loading: false, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
